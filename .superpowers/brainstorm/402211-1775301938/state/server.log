@@ -1,0 +1,9 @@
+{"type":"server-started","port":58460,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:58460","screen_dir":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content","state_dir":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/state"}
+{"type":"screen-added","file":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content/visual-style.html"}
+{"source":"user-event","type":"click","text":"25:00\n      \n      \n        \n          开始\n        \n      \n      \n        \n        \n        \n        \n      \n    \n    \n      C. 番茄红暖色风格\n      浅色背景 + 番茄红主色调，温暖活泼，符合番茄钟主题","choice":"c","id":null,"timestamp":1775302139635}
+{"type":"screen-added","file":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content/layout-v2.html"}
+{"type":"screen-added","file":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content/layout-v3.html"}
+{"type":"screen-added","file":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content/layout-v4.html"}
+{"type":"screen-added","file":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content/layout-v5.html"}
+{"type":"screen-added","file":"/home/daguo/Projects/Pomodoro/.superpowers/brainstorm/402211-1775301938/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}
