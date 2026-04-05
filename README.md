@@ -106,13 +106,37 @@ export JAVA_HOME=/path/to/java17  # 例如: /usr/lib/jvm/java-17-openjdk
 ./gradlew assembleRelease
 ```
 
-### 使用构建脚本
+### 使用构建脚本（推荐）
 
-项目提供了便捷的构建脚本：
+项目提供了便捷的构建脚本 `build.sh`，会自动配置环境变量并构建 APK：
+
+**构建 Debug 版本：**
 
 ```bash
 ./build.sh
+# 或者明确指定
+./build.sh debug
 ```
+
+**构建 Release 版本：**
+
+```bash
+./build.sh release
+```
+
+**脚本功能：**
+- ✅ 自动检测和配置 `ANDROID_HOME` 和 `JAVA_HOME`
+- ✅ 执行 Gradle 构建任务
+- ✅ 显示构建结果和 APK 文件路径
+- ✅ 显示 APK 文件大小信息
+
+**默认环境变量：**
+- `ANDROID_HOME`: `$HOME/Android/Sdk`（可通过环境变量覆盖）
+- `JAVA_HOME`: `/usr/lib/jvm/bellsoft-java17-amd64`（可通过环境变量覆盖）
+
+**输出文件：**
+- Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
+- Release APK: `app/build/outputs/apk/release/app-release-unsigned.apk`
 
 ## 配置说明
 
