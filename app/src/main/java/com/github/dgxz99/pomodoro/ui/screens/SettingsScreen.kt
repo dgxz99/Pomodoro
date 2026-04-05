@@ -124,7 +124,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "设置会自动保存，并在下次启动计时器时生效。",
+                    text = "设置会自动保存并立即生效。",
                     fontSize = 14.sp,
                     color = TextSecondary
                 )
@@ -190,7 +190,6 @@ private fun SettingItem(
             value = value.toFloat(),
             onValueChange = onValueChange,
             valueRange = min..max,
-            steps = (max - min).toInt() - 1,
             colors = SliderDefaults.colors(
                 thumbColor = TomatoRed,
                 activeTrackColor = TomatoRed,

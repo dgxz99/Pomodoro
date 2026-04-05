@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.dgxz99.pomodoro.data.preferences.SettingsDataStore
 import com.github.dgxz99.pomodoro.domain.model.TimerMode
 import com.github.dgxz99.pomodoro.ui.components.CircularTimer
 import com.github.dgxz99.pomodoro.ui.components.ControlButtons
@@ -44,17 +43,23 @@ fun TimerScreen(
     val todayCount by viewModel.todayCount.collectAsState()
     val todayMinutes by viewModel.todayMinutes.collectAsState()
     
+    // Get actual settings from ViewModel
+    val focusDuration by viewModel.focusDuration.collectAsState()
+    val shortBreakDuration by viewModel.shortBreakDuration.collectAsState()
+    val longBreakDuration by viewModel.longBreakDuration.collectAsState()
+    val pomodorosUntilLongBreak by viewModel.pomodorosUntilLongBreak.collectAsState()
+    
     val modeTitle = when (timerState.mode) {
         TimerMode.FOCUS -> "专注时间"
         TimerMode.SHORT_BREAK -> "短休息"
         TimerMode.LONG_BREAK -> "长休息"
     }
     
-    // Calculate total seconds based on mode
+    // Calculate total seconds based on actual settings
     val totalSeconds = when (timerState.mode) {
-        TimerMode.FOCUS -> SettingsDataStore.DEFAULT_FOCUS_DURATION * 60
-        TimerMode.SHORT_BREAK -> SettingsDataStore.DEFAULT_SHORT_BREAK_DURATION * 60
-        TimerMode.LONG_BREAK -> SettingsDataStore.DEFAULT_LONG_BREAK_DURATION * 60
+        TimerMode.FOCUS -> focusDuration * 60
+        TimerMode.SHORT_BREAK -> shortBreakDuration * 60
+        TimerMode.LONG_BREAK -> longBreakDuration * 60
     }
     
     Column(
@@ -83,7 +88,7 @@ fun TimerScreen(
             // Progress indicator (番茄数进度)
             ProgressIndicator(
                 currentIndex = timerState.currentPomodoroIndex,
-                total = SettingsDataStore.DEFAULT_POMODOROS_UNTIL_LONG_BREAK
+                total = pomodorosUntilLongBreak
             )
         }
         

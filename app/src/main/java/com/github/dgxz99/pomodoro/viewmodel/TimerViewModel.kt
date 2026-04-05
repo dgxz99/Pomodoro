@@ -37,11 +37,20 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     private val _todayMinutes = MutableStateFlow(0)
     val todayMinutes: StateFlow<Int> = _todayMinutes.asStateFlow()
     
+    // Expose settings as StateFlow for UI to observe
+    private val _focusDuration = MutableStateFlow(SettingsDataStore.DEFAULT_FOCUS_DURATION)
+    val focusDuration: StateFlow<Int> = _focusDuration.asStateFlow()
+    
+    private val _shortBreakDuration = MutableStateFlow(SettingsDataStore.DEFAULT_SHORT_BREAK_DURATION)
+    val shortBreakDuration: StateFlow<Int> = _shortBreakDuration.asStateFlow()
+    
+    private val _longBreakDuration = MutableStateFlow(SettingsDataStore.DEFAULT_LONG_BREAK_DURATION)
+    val longBreakDuration: StateFlow<Int> = _longBreakDuration.asStateFlow()
+    
+    private val _pomodorosUntilLongBreak = MutableStateFlow(SettingsDataStore.DEFAULT_POMODOROS_UNTIL_LONG_BREAK)
+    val pomodorosUntilLongBreak: StateFlow<Int> = _pomodorosUntilLongBreak.asStateFlow()
+    
     private var timerJob: Job? = null
-    private var focusDuration = SettingsDataStore.DEFAULT_FOCUS_DURATION
-    private var shortBreakDuration = SettingsDataStore.DEFAULT_SHORT_BREAK_DURATION
-    private var longBreakDuration = SettingsDataStore.DEFAULT_LONG_BREAK_DURATION
-    private var pomodorosUntilLongBreak = SettingsDataStore.DEFAULT_POMODOROS_UNTIL_LONG_BREAK
     
     init {
         NotificationHelper.createNotificationChannels(application)
@@ -51,15 +60,15 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     
     private fun loadSettings() {
         viewModelScope.launch {
-            focusDuration = settingsDataStore.focusDuration.first()
-            shortBreakDuration = settingsDataStore.shortBreakDuration.first()
-            longBreakDuration = settingsDataStore.longBreakDuration.first()
-            pomodorosUntilLongBreak = settingsDataStore.pomodorosUntilLongBreak.first()
+            _focusDuration.value = settingsDataStore.focusDuration.first()
+            _shortBreakDuration.value = settingsDataStore.shortBreakDuration.first()
+            _longBreakDuration.value = settingsDataStore.longBreakDuration.first()
+            _pomodorosUntilLongBreak.value = settingsDataStore.pomodorosUntilLongBreak.first()
             
             // Initialize timer with focus duration
             _timerState.value = TimerState(
                 mode = TimerMode.FOCUS,
-                remainingSeconds = focusDuration * 60,
+                remainingSeconds = _focusDuration.value * 60,
                 isRunning = false,
                 currentPomodoroIndex = 0
             )
@@ -119,9 +128,9 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
         timerJob?.cancel()
         val currentMode = _timerState.value.mode
         val duration = when (currentMode) {
-            TimerMode.FOCUS -> focusDuration
-            TimerMode.SHORT_BREAK -> shortBreakDuration
-            TimerMode.LONG_BREAK -> longBreakDuration
+            TimerMode.FOCUS -> _focusDuration.value
+            TimerMode.SHORT_BREAK -> _shortBreakDuration.value
+            TimerMode.LONG_BREAK -> _longBreakDuration.value
         }
         _timerState.value = _timerState.value.copy(
             remainingSeconds = duration * 60,
@@ -140,15 +149,15 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
             when (currentState.mode) {
                 TimerMode.FOCUS -> {
                     // Record completed pomodoro
-                    repository.insertRecord(focusDuration)
+                    repository.insertRecord(_focusDuration.value)
                     
                     val newIndex = currentState.currentPomodoroIndex + 1
                     
-                    if (newIndex >= pomodorosUntilLongBreak) {
+                    if (newIndex >= _pomodorosUntilLongBreak.value) {
                         // Switch to long break
                         _timerState.value = TimerState(
                             mode = TimerMode.LONG_BREAK,
-                            remainingSeconds = longBreakDuration * 60,
+                            remainingSeconds = _longBreakDuration.value * 60,
                             isRunning = false,
                             currentPomodoroIndex = 0
                         )
@@ -156,7 +165,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
                         // Switch to short break
                         _timerState.value = currentState.copy(
                             mode = TimerMode.SHORT_BREAK,
-                            remainingSeconds = shortBreakDuration * 60,
+                            remainingSeconds = _shortBreakDuration.value * 60,
                             isRunning = false,
                             currentPomodoroIndex = newIndex
                         )
@@ -167,7 +176,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
                     // Switch back to focus
                     _timerState.value = currentState.copy(
                         mode = TimerMode.FOCUS,
-                        remainingSeconds = focusDuration * 60,
+                        remainingSeconds = _focusDuration.value * 60,
                         isRunning = false
                     )
                 }
@@ -199,18 +208,18 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     
     fun refreshSettings() {
         viewModelScope.launch {
-            focusDuration = settingsDataStore.focusDuration.first()
-            shortBreakDuration = settingsDataStore.shortBreakDuration.first()
-            longBreakDuration = settingsDataStore.longBreakDuration.first()
-            pomodorosUntilLongBreak = settingsDataStore.pomodorosUntilLongBreak.first()
+            _focusDuration.value = settingsDataStore.focusDuration.first()
+            _shortBreakDuration.value = settingsDataStore.shortBreakDuration.first()
+            _longBreakDuration.value = settingsDataStore.longBreakDuration.first()
+            _pomodorosUntilLongBreak.value = settingsDataStore.pomodorosUntilLongBreak.first()
             
-            // Update timer if not running
+            // Update timer immediately if not running
             if (!_timerState.value.isRunning) {
                 val currentMode = _timerState.value.mode
                 val duration = when (currentMode) {
-                    TimerMode.FOCUS -> focusDuration
-                    TimerMode.SHORT_BREAK -> shortBreakDuration
-                    TimerMode.LONG_BREAK -> longBreakDuration
+                    TimerMode.FOCUS -> _focusDuration.value
+                    TimerMode.SHORT_BREAK -> _shortBreakDuration.value
+                    TimerMode.LONG_BREAK -> _longBreakDuration.value
                 }
                 _timerState.value = _timerState.value.copy(
                     remainingSeconds = duration * 60

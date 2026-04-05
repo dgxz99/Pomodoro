@@ -3,6 +3,7 @@ package com.github.dgxz99.pomodoro.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,6 +26,13 @@ fun PomodoroNavGraph(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: BottomNavItem.Timer.route
+    
+    // Refresh settings when navigating back to timer screen
+    LaunchedEffect(currentRoute) {
+        if (currentRoute == BottomNavItem.Timer.route) {
+            timerViewModel.refreshSettings()
+        }
+    }
     
     Scaffold(
         bottomBar = {
