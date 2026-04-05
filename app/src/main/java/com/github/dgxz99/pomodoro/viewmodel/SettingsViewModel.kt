@@ -16,6 +16,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     
     private val settingsDataStore = SettingsDataStore(application)
     
+    // Track initialization state
+    private val _isInitialized = MutableStateFlow(false)
+    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+    
     private val _focusDuration = MutableStateFlow(SettingsDataStore.DEFAULT_FOCUS_DURATION)
     val focusDuration: StateFlow<Int> = _focusDuration.asStateFlow()
     
@@ -61,6 +65,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             val breakRingtoneUri = settingsDataStore.breakCompleteRingtone.first()
             _breakCompleteRingtoneUri.value = breakRingtoneUri
             _breakCompleteRingtoneName.value = getRingtoneName(breakRingtoneUri)
+            
+            // Mark as initialized
+            _isInitialized.value = true
         }
     }
     

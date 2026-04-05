@@ -50,6 +50,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     
+    val isInitialized by viewModel.isInitialized.collectAsState()
     val focusDuration by viewModel.focusDuration.collectAsState()
     val shortBreakDuration by viewModel.shortBreakDuration.collectAsState()
     val longBreakDuration by viewModel.longBreakDuration.collectAsState()
@@ -84,6 +85,16 @@ fun SettingsScreen(
             result.data?.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
         }
         viewModel.setBreakCompleteRingtone(uri)
+    }
+    
+    // Don't render content until initialized
+    if (!isInitialized) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(WarmWhite)
+        ) {}
+        return
     }
     
     Column(
