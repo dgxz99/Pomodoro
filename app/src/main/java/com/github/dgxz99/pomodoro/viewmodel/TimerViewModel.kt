@@ -50,6 +50,10 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     private val _pomodorosUntilLongBreak = MutableStateFlow(SettingsDataStore.DEFAULT_POMODOROS_UNTIL_LONG_BREAK)
     val pomodorosUntilLongBreak: StateFlow<Int> = _pomodorosUntilLongBreak.asStateFlow()
     
+    // Ringtone URIs
+    private val _focusCompleteRingtoneUri = MutableStateFlow<String?>(null)
+    private val _breakCompleteRingtoneUri = MutableStateFlow<String?>(null)
+    
     private var timerJob: Job? = null
     
     init {
@@ -64,6 +68,10 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
             _shortBreakDuration.value = settingsDataStore.shortBreakDuration.first()
             _longBreakDuration.value = settingsDataStore.longBreakDuration.first()
             _pomodorosUntilLongBreak.value = settingsDataStore.pomodorosUntilLongBreak.first()
+            
+            // Load ringtone settings
+            _focusCompleteRingtoneUri.value = settingsDataStore.focusCompleteRingtone.first()
+            _breakCompleteRingtoneUri.value = settingsDataStore.breakCompleteRingtone.first()
             
             // Initialize timer with focus duration
             _timerState.value = TimerState(
@@ -143,8 +151,14 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val currentState = _timerState.value
             
-            // Show completion notification
-            NotificationHelper.showTimerCompleteNotification(context, currentState.mode)
+            // Determine which ringtone to use based on mode
+            val ringtoneUri = when (currentState.mode) {
+                TimerMode.FOCUS -> _focusCompleteRingtoneUri.value
+                TimerMode.SHORT_BREAK, TimerMode.LONG_BREAK -> _breakCompleteRingtoneUri.value
+            }
+            
+            // Show completion notification with custom ringtone
+            NotificationHelper.showTimerCompleteNotification(context, currentState.mode, ringtoneUri)
             
             when (currentState.mode) {
                 TimerMode.FOCUS -> {
@@ -212,6 +226,10 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
             _shortBreakDuration.value = settingsDataStore.shortBreakDuration.first()
             _longBreakDuration.value = settingsDataStore.longBreakDuration.first()
             _pomodorosUntilLongBreak.value = settingsDataStore.pomodorosUntilLongBreak.first()
+            
+            // Refresh ringtone settings
+            _focusCompleteRingtoneUri.value = settingsDataStore.focusCompleteRingtone.first()
+            _breakCompleteRingtoneUri.value = settingsDataStore.breakCompleteRingtone.first()
             
             // Update timer immediately if not running
             if (!_timerState.value.isRunning) {

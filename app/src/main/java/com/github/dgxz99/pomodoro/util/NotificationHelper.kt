@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -35,10 +36,8 @@ object NotificationHelper {
             ).apply {
                 description = "计时器完成时的通知"
                 enableVibration(true)
-                setSound(
-                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
-                    null
-                )
+                // Don't set a default sound on the channel - we'll set it per notification
+                setSound(null, null)
             }
             
             // Timer running channel (silent, ongoing)
@@ -57,7 +56,11 @@ object NotificationHelper {
         }
     }
     
-    fun showTimerCompleteNotification(context: Context, mode: TimerMode) {
+    fun showTimerCompleteNotification(
+        context: Context,
+        mode: TimerMode,
+        customRingtoneUri: String? = null
+    ) {
         val (title, message) = when (mode) {
             TimerMode.FOCUS -> "专注时间结束" to "休息一下吧！"
             TimerMode.SHORT_BREAK -> "休息结束" to "继续专注！"
@@ -75,6 +78,17 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
+        // Determine the ringtone to use
+        val soundUri = if (customRingtoneUri != null) {
+            try {
+                Uri.parse(customRingtoneUri)
+            } catch (_: Exception) {
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            }
+        } else {
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        }
+        
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_TIMER_COMPLETE)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
@@ -82,7 +96,7 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
-            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+            .setSound(soundUri)
             .build()
         
         // Check notification permission for Android 13+

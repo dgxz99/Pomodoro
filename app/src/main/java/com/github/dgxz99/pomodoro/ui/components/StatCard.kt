@@ -1,6 +1,9 @@
 package com.github.dgxz99.pomodoro.ui.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -20,11 +23,11 @@ import com.github.dgxz99.pomodoro.ui.theme.White
 fun StatCard(
     title: String,
     value: Int,
-    subtitle: String? = null,
+    unit: String,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = White
@@ -34,7 +37,9 @@ fun StatCard(
         )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp, horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -43,18 +48,18 @@ fun StatCard(
                 fontWeight = FontWeight.Bold,
                 color = TomatoRed
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = title,
                 fontSize = 14.sp,
                 color = TextSecondary
             )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    fontSize = 12.sp,
-                    color = TextSecondary.copy(alpha = 0.7f)
-                )
-            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = unit,
+                fontSize = 12.sp,
+                color = TextSecondary.copy(alpha = 0.7f)
+            )
         }
     }
 }

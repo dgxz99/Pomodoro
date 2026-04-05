@@ -17,20 +17,23 @@ import com.github.dgxz99.pomodoro.ui.components.BottomNavItem
 import com.github.dgxz99.pomodoro.ui.screens.SettingsScreen
 import com.github.dgxz99.pomodoro.ui.screens.StatsScreen
 import com.github.dgxz99.pomodoro.ui.screens.TimerScreen
+import com.github.dgxz99.pomodoro.viewmodel.StatsViewModel
 import com.github.dgxz99.pomodoro.viewmodel.TimerViewModel
 
 @Composable
 fun PomodoroNavGraph(
     navController: NavHostController = rememberNavController(),
-    timerViewModel: TimerViewModel = viewModel()
+    timerViewModel: TimerViewModel = viewModel(),
+    statsViewModel: StatsViewModel = viewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: BottomNavItem.Timer.route
     
-    // Refresh settings when navigating back to timer screen
+    // Refresh data when navigating between screens
     LaunchedEffect(currentRoute) {
-        if (currentRoute == BottomNavItem.Timer.route) {
-            timerViewModel.refreshSettings()
+        when (currentRoute) {
+            BottomNavItem.Timer.route -> timerViewModel.refreshSettings()
+            BottomNavItem.Stats.route -> statsViewModel.refresh()
         }
     }
     
@@ -62,7 +65,7 @@ fun PomodoroNavGraph(
                 TimerScreen(viewModel = timerViewModel)
             }
             composable(BottomNavItem.Stats.route) {
-                StatsScreen()
+                StatsScreen(viewModel = statsViewModel)
             }
             composable(BottomNavItem.Settings.route) {
                 SettingsScreen()

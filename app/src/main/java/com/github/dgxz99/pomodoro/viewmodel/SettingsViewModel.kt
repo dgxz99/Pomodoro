@@ -1,6 +1,8 @@
 package com.github.dgxz99.pomodoro.viewmodel
 
 import android.app.Application
+import android.media.RingtoneManager
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.dgxz99.pomodoro.data.preferences.SettingsDataStore
@@ -26,6 +28,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _pomodorosUntilLongBreak = MutableStateFlow(SettingsDataStore.DEFAULT_POMODOROS_UNTIL_LONG_BREAK)
     val pomodorosUntilLongBreak: StateFlow<Int> = _pomodorosUntilLongBreak.asStateFlow()
     
+    // Ringtone URIs (null means system default)
+    private val _focusCompleteRingtoneUri = MutableStateFlow<String?>(null)
+    val focusCompleteRingtoneUri: StateFlow<String?> = _focusCompleteRingtoneUri.asStateFlow()
+    
+    private val _breakCompleteRingtoneUri = MutableStateFlow<String?>(null)
+    val breakCompleteRingtoneUri: StateFlow<String?> = _breakCompleteRingtoneUri.asStateFlow()
+    
+    // Ringtone display names
+    private val _focusCompleteRingtoneName = MutableStateFlow("系统默认")
+    val focusCompleteRingtoneName: StateFlow<String> = _focusCompleteRingtoneName.asStateFlow()
+    
+    private val _breakCompleteRingtoneName = MutableStateFlow("系统默认")
+    val breakCompleteRingtoneName: StateFlow<String> = _breakCompleteRingtoneName.asStateFlow()
+    
     init {
         loadSettings()
     }
@@ -36,6 +52,26 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _shortBreakDuration.value = settingsDataStore.shortBreakDuration.first()
             _longBreakDuration.value = settingsDataStore.longBreakDuration.first()
             _pomodorosUntilLongBreak.value = settingsDataStore.pomodorosUntilLongBreak.first()
+            
+            // Load ringtone settings
+            val focusRingtoneUri = settingsDataStore.focusCompleteRingtone.first()
+            _focusCompleteRingtoneUri.value = focusRingtoneUri
+            _focusCompleteRingtoneName.value = getRingtoneName(focusRingtoneUri)
+            
+            val breakRingtoneUri = settingsDataStore.breakCompleteRingtone.first()
+            _breakCompleteRingtoneUri.value = breakRingtoneUri
+            _breakCompleteRingtoneName.value = getRingtoneName(breakRingtoneUri)
+        }
+    }
+    
+    private fun getRingtoneName(uriString: String?): String {
+        if (uriString == null) return "系统默认"
+        return try {
+            val uri = Uri.parse(uriString)
+            val ringtone = RingtoneManager.getRingtone(getApplication(), uri)
+            ringtone?.getTitle(getApplication()) ?: "系统默认"
+        } catch (_: Exception) {
+            "系统默认"
         }
     }
     
@@ -68,6 +104,24 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             settingsDataStore.setPomodorosUntilLongBreak(validCount)
             _pomodorosUntilLongBreak.value = validCount
+        }
+    }
+    
+    fun setFocusCompleteRingtone(uri: Uri?) {
+        viewModelScope.launch {
+            val uriString = uri?.toString()
+            settingsDataStore.setFocusCompleteRingtone(uriString)
+            _focusCompleteRingtoneUri.value = uriString
+            _focusCompleteRingtoneName.value = getRingtoneName(uriString)
+        }
+    }
+    
+    fun setBreakCompleteRingtone(uri: Uri?) {
+        viewModelScope.launch {
+            val uriString = uri?.toString()
+            settingsDataStore.setBreakCompleteRingtone(uriString)
+            _breakCompleteRingtoneUri.value = uriString
+            _breakCompleteRingtoneName.value = getRingtoneName(uriString)
         }
     }
 }

@@ -41,15 +41,17 @@ class StatsViewModel(application: Application) : AndroidViewModel(application) {
     
     private fun loadStats() {
         viewModelScope.launch {
-            _todayCount.value = repository.getTodayCount()
+            // Load all stats fresh each time
             _weekCount.value = repository.getWeekCount()
             _monthCount.value = repository.getMonthCount()
             _totalCount.value = repository.getTotalCount()
             
             // Calculate streak days
             _streakDays.value = calculateStreakDays()
-            
-            // Calculate today's minutes
+        }
+        
+        // Observe today's records for real-time updates
+        viewModelScope.launch {
             val startOfDay = getStartOfDayTimestamp()
             repository.getRecordsSince(startOfDay).collect { records ->
                 _todayMinutes.value = records.sumOf { it.duration }

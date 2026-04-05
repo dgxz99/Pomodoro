@@ -63,36 +63,47 @@ fun StatsScreen(
                 StatCard(
                     title = "今日番茄",
                     value = todayCount,
-                    subtitle = "${todayMinutes}分钟"
+                    unit = "个"
+                )
+            }
+            
+            item {
+                StatCard(
+                    title = "今日专注",
+                    value = todayMinutes,
+                    unit = "分钟"
                 )
             }
             
             item {
                 StatCard(
                     title = "本周番茄",
-                    value = weekCount
+                    value = weekCount,
+                    unit = "个"
                 )
             }
             
             item {
                 StatCard(
                     title = "本月番茄",
-                    value = monthCount
+                    value = monthCount,
+                    unit = "个"
                 )
             }
             
             item {
                 StatCard(
                     title = "总计番茄",
-                    value = totalCount
+                    value = totalCount,
+                    unit = "个"
                 )
             }
             
             item {
                 StatCard(
-                    title = "连续天数",
+                    title = "连续使用",
                     value = streakDays,
-                    subtitle = "天"
+                    unit = "天"
                 )
             }
         }
