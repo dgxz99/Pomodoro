@@ -7,4 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Pomodoro Theme Colors -->
+    <color name="tomato_red">#FFFF6B6B</color>
+    <color name="tomato_red_dark">#FFE04848</color>
+    <color name="warm_white">#FFFAF5F0</color>
 </resources>

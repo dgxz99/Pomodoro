@@ -54,7 +54,7 @@ fun StatsScreen(
         
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(0.dp),
+            contentPadding = PaddingValues(bottom = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth()

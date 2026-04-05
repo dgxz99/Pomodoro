@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
@@ -19,7 +20,7 @@ import com.github.dgxz99.pomodoro.domain.model.TimerMode
 
 object NotificationHelper {
     
-    const val CHANNEL_ID_TIMER_COMPLETE = "timer_complete"
+    const val CHANNEL_ID_TIMER_COMPLETE = "timer_complete_v2"
     const val CHANNEL_ID_TIMER_RUNNING = "timer_running"
     const val NOTIFICATION_ID_TIMER_COMPLETE = 1001
     const val NOTIFICATION_ID_TIMER_RUNNING = 1002
@@ -28,7 +29,15 @@ object NotificationHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = context.getSystemService(NotificationManager::class.java)
             
-            // Timer complete channel (with sound)
+            // Delete old channel if exists (to update sound settings)
+            notificationManager.deleteNotificationChannel("timer_complete")
+            
+            // Timer complete channel (with default sound)
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            
             val completeChannel = NotificationChannel(
                 CHANNEL_ID_TIMER_COMPLETE,
                 "计时器完成",
@@ -36,8 +45,10 @@ object NotificationHelper {
             ).apply {
                 description = "计时器完成时的通知"
                 enableVibration(true)
-                // Don't set a default sound on the channel - we'll set it per notification
-                setSound(null, null)
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+                    audioAttributes
+                )
             }
             
             // Timer running channel (silent, ongoing)
@@ -89,16 +100,6 @@ object NotificationHelper {
             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         }
         
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID_TIMER_COMPLETE)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .setSound(soundUri)
-            .build()
-        
         // Check notification permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -110,7 +111,37 @@ object NotificationHelper {
             }
         }
         
+        // Play sound directly using RingtoneManager for better compatibility
+        playNotificationSound(context, soundUri)
+        
+        // Build notification without sound (we play it separately for custom ringtone support)
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_TIMER_COMPLETE)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setSilent(true)  // We play sound manually
+            .build()
+        
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_TIMER_COMPLETE, notification)
+    }
+    
+    private fun playNotificationSound(context: Context, soundUri: Uri?) {
+        try {
+            val uri = soundUri ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val ringtone = RingtoneManager.getRingtone(context, uri)
+            ringtone?.play()
+        } catch (_: Exception) {
+            // Fallback: try to play default notification sound
+            try {
+                val defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                RingtoneManager.getRingtone(context, defaultUri)?.play()
+            } catch (_: Exception) {
+                // Ignore if we can't play any sound
+            }
+        }
     }
     
     fun createRunningNotification(

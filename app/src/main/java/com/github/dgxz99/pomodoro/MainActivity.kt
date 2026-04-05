@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.github.dgxz99.pomodoro.ui.navigation.PomodoroNavGraph
 import com.github.dgxz99.pomodoro.ui.theme.PomodoroTheme
 import com.github.dgxz99.pomodoro.ui.theme.WarmWhite
@@ -25,7 +26,15 @@ class MainActivity : ComponentActivity() {
         // Permission result handled - notifications will work if granted
     }
     
+    private var isReady = false
+    
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Install splash screen before super.onCreate()
+        val splashScreen = installSplashScreen()
+        
+        // Keep splash screen visible until app is ready
+        splashScreen.setKeepOnScreenCondition { !isReady }
+        
         super.onCreate(savedInstanceState)
         
         // Create notification channels
@@ -41,7 +50,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = WarmWhite
                 ) {
-                    PomodoroNavGraph()
+                    PomodoroNavGraph(
+                        onReady = { isReady = true }
+                    )
                 }
             }
         }

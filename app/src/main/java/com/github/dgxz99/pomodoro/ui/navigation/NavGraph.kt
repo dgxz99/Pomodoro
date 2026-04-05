@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,10 +25,21 @@ import com.github.dgxz99.pomodoro.viewmodel.TimerViewModel
 fun PomodoroNavGraph(
     navController: NavHostController = rememberNavController(),
     timerViewModel: TimerViewModel = viewModel(),
-    statsViewModel: StatsViewModel = viewModel()
+    statsViewModel: StatsViewModel = viewModel(),
+    onReady: () -> Unit = {}
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: BottomNavItem.Timer.route
+    
+    // Observe timer state to know when settings are loaded
+    val timerState by timerViewModel.timerState.collectAsState()
+    
+    // Signal ready when timer state is initialized (settings loaded)
+    LaunchedEffect(timerState.remainingSeconds) {
+        if (timerState.remainingSeconds > 0) {
+            onReady()
+        }
+    }
     
     // Refresh data when navigating between screens
     LaunchedEffect(currentRoute) {

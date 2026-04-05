@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.Pomodoro" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Base application theme -->
+    <style name="Theme.Pomodoro" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/tomato_red</item>
+        <item name="android:navigationBarColor">@color/warm_white</item>
+    </style>
+    
+    <!-- Splash Screen Theme -->
+    <style name="Theme.Pomodoro.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/tomato_red</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimationDuration">800</item>
+        <item name="postSplashScreenTheme">@style/Theme.Pomodoro</item>
+    </style>
 </resources>
