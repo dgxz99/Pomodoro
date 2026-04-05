@@ -25,7 +25,7 @@ cd "$PROJECT_DIR"
 if [ "$BUILD_TYPE" == "release" ]; then
     echo "Building release APK..."
     ./gradlew assembleRelease
-    APK_PATH="app/build/outputs/apk/release/app-release-unsigned.apk"
+    APK_PATH="app/build/outputs/apk/release/app-release.apk"
 else
     echo "Building debug APK..."
     ./gradlew assembleDebug
