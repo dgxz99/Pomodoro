@@ -31,12 +31,12 @@ fun PomodoroNavGraph(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: BottomNavItem.Timer.route
     
-    // Observe timer state to know when settings are loaded
-    val timerState by timerViewModel.timerState.collectAsState()
+    // Observe initialization state
+    val isInitialized by timerViewModel.isInitialized.collectAsState()
     
-    // Signal ready when timer state is initialized (settings loaded)
-    LaunchedEffect(timerState.remainingSeconds) {
-        if (timerState.remainingSeconds > 0) {
+    // Signal ready when settings are loaded
+    LaunchedEffect(isInitialized) {
+        if (isInitialized) {
             onReady()
         }
     }

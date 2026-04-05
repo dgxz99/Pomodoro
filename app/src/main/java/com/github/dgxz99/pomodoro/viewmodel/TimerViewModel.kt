@@ -31,6 +31,10 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     private val _timerState = MutableStateFlow(TimerState())
     val timerState: StateFlow<TimerState> = _timerState.asStateFlow()
     
+    // Track whether settings have been loaded
+    private val _isInitialized = MutableStateFlow(false)
+    val isInitialized: StateFlow<Boolean> = _isInitialized.asStateFlow()
+    
     private val _todayCount = MutableStateFlow(0)
     val todayCount: StateFlow<Int> = _todayCount.asStateFlow()
     
@@ -80,6 +84,9 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
                 isRunning = false,
                 currentPomodoroIndex = 0
             )
+            
+            // Mark as initialized after settings are loaded
+            _isInitialized.value = true
         }
     }
     

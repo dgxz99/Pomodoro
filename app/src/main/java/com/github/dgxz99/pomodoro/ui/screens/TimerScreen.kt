@@ -40,6 +40,7 @@ fun TimerScreen(
     modifier: Modifier = Modifier
 ) {
     val timerState by viewModel.timerState.collectAsState()
+    val isInitialized by viewModel.isInitialized.collectAsState()
     val todayCount by viewModel.todayCount.collectAsState()
     val todayMinutes by viewModel.todayMinutes.collectAsState()
     
@@ -48,6 +49,17 @@ fun TimerScreen(
     val shortBreakDuration by viewModel.shortBreakDuration.collectAsState()
     val longBreakDuration by viewModel.longBreakDuration.collectAsState()
     val pomodorosUntilLongBreak by viewModel.pomodorosUntilLongBreak.collectAsState()
+    
+    // Don't render content until initialized (splash screen covers this)
+    if (!isInitialized) {
+        // Empty background while loading
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(WarmWhite)
+        ) {}
+        return
+    }
     
     val modeTitle = when (timerState.mode) {
         TimerMode.FOCUS -> "专注时间"
