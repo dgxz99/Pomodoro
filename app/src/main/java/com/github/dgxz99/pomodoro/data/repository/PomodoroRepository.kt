@@ -42,6 +42,10 @@ class PomodoroRepository(private val pomodoroDao: PomodoroDao) {
         return pomodoroDao.getRecordsSince(timestamp)
     }
     
+    suspend fun getCountForDay(startTimestamp: Long, endTimestamp: Long): Int {
+        return pomodoroDao.getCountForDay(startTimestamp, endTimestamp)
+    }
+    
     private fun getStartOfDayTimestamp(): Long {
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, 0)

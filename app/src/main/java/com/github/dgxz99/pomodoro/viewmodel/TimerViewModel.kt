@@ -1,6 +1,8 @@
 package com.github.dgxz99.pomodoro.viewmodel
 
 import android.app.Application
+import android.content.Intent
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.dgxz99.pomodoro.data.local.PomodoroDatabase
@@ -8,6 +10,8 @@ import com.github.dgxz99.pomodoro.data.preferences.SettingsDataStore
 import com.github.dgxz99.pomodoro.data.repository.PomodoroRepository
 import com.github.dgxz99.pomodoro.domain.model.TimerMode
 import com.github.dgxz99.pomodoro.domain.model.TimerState
+import com.github.dgxz99.pomodoro.service.TimerService
+import com.github.dgxz99.pomodoro.util.NotificationHelper
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +22,7 @@ import kotlinx.coroutines.launch
 
 class TimerViewModel(application: Application) : AndroidViewModel(application) {
     
+    private val context = application
     private val settingsDataStore = SettingsDataStore(application)
     private val repository = PomodoroRepository(
         PomodoroDatabase.getDatabase(application).pomodoroDao()
@@ -39,6 +44,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     private var pomodorosUntilLongBreak = SettingsDataStore.DEFAULT_POMODOROS_UNTIL_LONG_BREAK
     
     init {
+        NotificationHelper.createNotificationChannels(application)
         loadSettings()
         loadTodayStats()
     }
@@ -86,6 +92,9 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
         
         _timerState.value = _timerState.value.copy(isRunning = true)
         
+        // Start foreground service for background timing
+        startTimerService()
+        
         timerJob = viewModelScope.launch {
             while (_timerState.value.remainingSeconds > 0 && _timerState.value.isRunning) {
                 delay(1000)
@@ -103,6 +112,7 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
     fun pause() {
         timerJob?.cancel()
         _timerState.value = _timerState.value.copy(isRunning = false)
+        stopTimerService()
     }
     
     fun stop() {
@@ -117,11 +127,15 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
             remainingSeconds = duration * 60,
             isRunning = false
         )
+        stopTimerService()
     }
     
     private fun onTimerComplete() {
         viewModelScope.launch {
             val currentState = _timerState.value
+            
+            // Show completion notification
+            NotificationHelper.showTimerCompleteNotification(context, currentState.mode)
             
             when (currentState.mode) {
                 TimerMode.FOCUS -> {
@@ -158,11 +172,51 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
             }
+            
+            stopTimerService()
         }
     }
     
+    private fun startTimerService() {
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_START
+            putExtra(TimerService.EXTRA_SECONDS, _timerState.value.remainingSeconds)
+            putExtra(TimerService.EXTRA_MODE, _timerState.value.mode.name)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+    }
+    
+    private fun stopTimerService() {
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_STOP
+        }
+        context.startService(intent)
+    }
+    
     fun refreshSettings() {
-        loadSettings()
+        viewModelScope.launch {
+            focusDuration = settingsDataStore.focusDuration.first()
+            shortBreakDuration = settingsDataStore.shortBreakDuration.first()
+            longBreakDuration = settingsDataStore.longBreakDuration.first()
+            pomodorosUntilLongBreak = settingsDataStore.pomodorosUntilLongBreak.first()
+            
+            // Update timer if not running
+            if (!_timerState.value.isRunning) {
+                val currentMode = _timerState.value.mode
+                val duration = when (currentMode) {
+                    TimerMode.FOCUS -> focusDuration
+                    TimerMode.SHORT_BREAK -> shortBreakDuration
+                    TimerMode.LONG_BREAK -> longBreakDuration
+                }
+                _timerState.value = _timerState.value.copy(
+                    remainingSeconds = duration * 60
+                )
+            }
+        }
     }
     
     override fun onCleared() {

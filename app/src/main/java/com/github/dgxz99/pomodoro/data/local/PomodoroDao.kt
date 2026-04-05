@@ -19,6 +19,9 @@ interface PomodoroDao {
     @Query("SELECT COUNT(*) FROM pomodoro_records WHERE completedAt >= :startTimestamp")
     suspend fun getCountSince(startTimestamp: Long): Int
 
+    @Query("SELECT COUNT(*) FROM pomodoro_records WHERE completedAt >= :startTimestamp AND completedAt < :endTimestamp")
+    suspend fun getCountForDay(startTimestamp: Long, endTimestamp: Long): Int
+
     @Query("DELETE FROM pomodoro_records")
     suspend fun deleteAll()
 }
